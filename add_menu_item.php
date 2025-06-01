@@ -65,24 +65,30 @@ try {
         $imagePath = $targetFile;
     }
 
-    // Prepare and execute SQL
-    $stmt = $conn->prepare("INSERT INTO menu_items 
-                           (item_name, sub_item, price, image_path, category_id) 
-                           VALUES (?, ?, ?, ?, ?)");
-    
-    if (!$stmt) {
-        throw new Exception('Prepare failed: ' . $conn->error);
-    }
-    
+    // Get input values
+    $itemName = $_POST['item_name'];
     $subItem = $_POST['sub_item'] ?? '';
     $price = (float)$_POST['price'];
     $categoryId = (int)$_POST['category_id'];
-    $stmt->bind_param("ssdsi", 
-        $_POST['item_name'],
+    $subCategoryId = isset($_POST['sub_category_id']) ? (int)$_POST['sub_category_id'] : null;
+
+    // Prepare and execute SQL (includes sub_category_id)
+    $stmt = $conn->prepare("INSERT INTO menu_items 
+        (item_name, description, price, image_path, category_id, sub_category_id) 
+        VALUES (?, ?, ?, ?, ?, ?)");
+
+    if (!$stmt) {
+        throw new Exception('Prepare failed: ' . $conn->error);
+    }
+
+    // Bind params: s = string, d = double, i = integer
+    $stmt->bind_param("ssdsii", 
+        $itemName,
         $subItem,
         $price,
         $imagePath,
-        $categoryId
+        $categoryId,
+        $subCategoryId
     );
 
     if ($stmt->execute()) {
@@ -98,7 +104,7 @@ try {
     error_log("Error in add_menu_item.php: " . $e->getMessage());
     $response['message'] = $e->getMessage();
     
-    // Clean up if there was an error after file upload
+    // Clean up uploaded image if insertion fails
     if (isset($targetFile) && file_exists($targetFile)) {
         @unlink($targetFile);
     }
@@ -106,4 +112,3 @@ try {
 
 echo json_encode($response);
 $conn->close();
-?>

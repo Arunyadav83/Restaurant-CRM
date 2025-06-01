@@ -84,7 +84,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 	<!-- Style css -->
 	<link href="css/style.css" rel="stylesheet">
 	<style>
-		/* .nav-header {
+	/* .nav-header {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
